@@ -1,8 +1,8 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "../include/linkedList.h"
-#include "../customWarning/customWarning.h"
+#include "linkedList.h"
+#include "customWarning.h"
 
 // TODO VERIFY IN EVERY FUNCTION
 
@@ -19,15 +19,20 @@ linkedListError linkedListInitialize(linkedList *list, size_t capacity) {
   customWarning(list->prev != NULL, PREVIOUS_BAD_POINTER); // TODO MAYBE RENAME ENUM
   customWarning(list->next != NULL, NEXT_BAD_POINTER);     // TODO MAYBE RENAME ENUM
 
-  list->prev[0] = 0;
-  list->next[0] = 0;
-
+  list->data[0]  = 0; // TODO all cells to poison
+  list->prev[0]  = 0; // ПУСТАЯ ЯЧЕЙКА, НИКУДА НЕ УКАЗЫВАЕТ
+  list->next[0]  = 0; // ПУСТАЯ ЯЧЕЙКА, НИКУДА НЕ УКАЗЫВАЕТ
   list->freeNode = 1; // В НУЛЕВУЮ ЯЧЕЙКУ НИЧЕГО НЕ КЛАДЕМ, ВСЕ УЗЛЫ СЕЙЧАС СВОБОДНЫ, НАЧИНАЕМ С ПЕРВОГО РАССТАВЛЯТЬ ИНДЕКСЫ
 
   for (ssize_t nodeIndex = list->freeNode; nodeIndex < list->capacity; nodeIndex++) {
-    list->next[nodeIndex] = (nodeIndex + 1) % list->capacity; // КОЛЬЦО
-    list->prev[nodeIndex] = -1;
+    list->next[nodeIndex] = (nodeIndex + 1) % list->capacity; // КОЛЬЦЕВАЯ ИНДЕКСАЦИЯ
+    list->prev[nodeIndex] = -1;                               // НЕВАЛИДНЫЙ ПОИНТЕР
   }
+
+  // for (ssize_t nodeIndex = list->freeNode; nodeIndex < list->capacity; nodeIndex++) {
+  //   printf("[%d]->%d ", nodeIndex, list->next[nodeIndex]);
+  // }
+  // printf("\n");
 
   return NO_ERRORS;
 }
@@ -73,44 +78,54 @@ linkedListError linkedListDump      (linkedList *list) {
   return NO_ERRORS;
 }
 
-linkedListError insertNode          (linkedList *list, size_t index, elem_t value) {
+linkedListError insertNode          (linkedList *list, ssize_t index, ssize_t *newIndex, elem_t value) {
   customWarning(list != NULL, NODE_BAD_POINTER);
   // TODO CHECK INDEX, CAPACITY
 
-  ssize_t newIndex = list->freeNode;
-  list->freeNode   = list->next[list->freeNode];
+  *newIndex                     = list->freeNode;             // newIndex - индекс свободной (freeNode) ячейки
+  list->freeNode                = list->next[list->freeNode]; // свободной становится ячейка, следующая от предыдущей свободной
 
-  list->prev[list->next[index]] = newIndex;
-  list->prev[newIndex]          = index;
+  list->data[*newIndex]         = value;                      // в новую (свободную) ячейку кладем значение
 
-  list->next[index]             = newIndex;
-  list->next[newIndex]          = list->next[index];
+  list->prev[list->next[index]] = *newIndex;                  // для следующей от старой ячейки, указателем на предыдущую становится новый индекс
+  list->prev[*newIndex]         = index;                      // для новой ячейки предыдущая ячейка - та, после которой вставляем,
+                                                              // то есть с индексом index
 
-  list->data[newIndex] = value;
+  list->next[*newIndex]         = list->next[index];          // следующей для новой ячейки становится указатель на следующую для старой
+                                                              // (просто поместили между ними)
+  list->next[index]             = *newIndex;                  // новая ячейка встала справа от старой, значит для старойуказатель на след.
+                                                              // - указатель на новую
 
   return NO_ERRORS;
 }
 
-linkedListError deleteNode          (linkedList *list, size_t index) {
+linkedListError deleteNode          (linkedList *list, ssize_t index) {
   customWarning(list != NULL, LIST_BAD_POINTER);
   // TODO CHECKER
 
-  list->data[index + 1] = POISON_VALUE;
+  list->prev[list->next[index]] = list->prev[index]; // [A -> B -> C], del B, [A -> C], для С предыдущей становится предыдущая для В, т. е. А
+  list->next[list->prev[index]] = list->next[index]; // [A -> B -> C], del B, [A -> C], для А следующей  становится следующая  для В, т. е. С
 
-  list->prev[list->next[index]] = list->prev[index];
-  list->next[list->prev[index]] = list->next[index];
-
-  list->next[index] = list->freeNode;
-  list->prev[index] = -1;
-  list->freeNode    = index;
-
-
+  list->next[index] = list->freeNode;                // [A -> ... -> С]
+  list->prev[index] = -1;                            // эмэаээаэаэа надо подумать поч невалидный поинтер на предыдущую 🤔🤔🤔🤔🤔
+  list->freeNode    = index;                         // ячейка, которую занимала В, теперь свободна
+  // TODO это как будто не совсем правильно, наверное узлы должны сдвигаться друг к другу? так между ними пустые узлы
   return NO_ERRORS;
 }
 
-linkedListError getNode             (linkedList *list, size_t index) {
-  return NO_ERRORS;
-}
+// TODO подумать как лучше это реализовать? сделать отдельную структурку, чтобы вытаскивать целую структуру с next, prev, value
+// TODO или достаточно доставать только значение по индексу например (чекнуть дефолтные функции на cppreference)
+
+// linkedListError getNode             (linkedList *list, linkedListNode *getNodeInfo, size_t index) {
+//   customWarning(list != NULL, LIST_BAD_POINTER);
+//   // TODO CHECK FOR GET NODE INFO PTR
+
+//   getNodeInfo->value = list->data[index];
+//   getNodeInfo->prev  = list->prev[index];
+//   getNodeInfo->next  = list->next[index];
+
+//   return NO_ERRORS;
+// }
 
 
 
