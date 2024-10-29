@@ -4,44 +4,32 @@
 #include "../include/linkedList.h"
 #include "../customWarning/customWarning.h"
 
+// TODO VERIFY IN EVERY FUNCTION
+
 linkedListError linkedListInitialize(linkedList *list, size_t capacity) {
   customWarning(list != NULL, LIST_BAD_POINTER);
 
   list->capacity = (ssize_t)capacity + 1;
 
-  list->root = (linkedListNode *)calloc(1, sizeof(linkedListNode));
-  customWarning(list->root != NULL, ROOT_BAD_POINTER);
+  list->data     = (elem_t  *)calloc((size_t)list->capacity, sizeof(elem_t));
+  list->prev     = (ssize_t *)calloc((size_t)list->capacity, sizeof(ssize_t));
+  list->next     = (ssize_t *)calloc((size_t)list->capacity, sizeof(ssize_t));
 
-  list->head = list->root;
-  list->tail = list->root;
+  customWarning(list->data != NULL, DATA_BAD_POINTER);
+  customWarning(list->prev != NULL, PREVIOUS_BAD_POINTER); // TODO MAYBE RENAME ENUM
+  customWarning(list->next != NULL, NEXT_BAD_POINTER);     // TODO MAYBE RENAME ENUM
 
-  list->root->data             = 0;
-  list->root->previousListNode = NULL;
-  list->root->nextListNode     = NULL;
+  list->prev[0] = 0;
+  list->next[0] = 0;
 
-  size_t nodeIndex = 0;
-  linkedListNode *currentNode = list->head;
+  list->freeNode = 1; // В НУЛЕВУЮ ЯЧЕЙКУ НИЧЕГО НЕ КЛАДЕМ, ВСЕ УЗЛЫ СЕЙЧАС СВОБОДНЫ, НАЧИНАЕМ С ПЕРВОГО РАССТАВЛЯТЬ ИНДЕКСЫ
 
-  while (currentNode && nodeIndex < list->capacity) {
-    linkedListNode *nextNode = (linkedListNode *)calloc(1, sizeof(linkedListNode));
-
-    customWarning(nextNode != NULL, NODE_BAD_POINTER);
-
-    nextNode->data             = 0;
-    nextNode->previousListNode = currentNode;
-    nextNode->nextListNode     = NULL;
-
-    currentNode->nextListNode  = nextNode;
-
-    currentNode = currentNode->nextListNode;
-    nodeIndex++;
-
-    list->tail = currentNode;
+  for (ssize_t nodeIndex = list->freeNode; nodeIndex < list->capacity; nodeIndex++) {
+    list->next[nodeIndex] = (nodeIndex + 1) % list->capacity; // КОЛЬЦО
+    list->prev[nodeIndex] = -1;
   }
 
   return NO_ERRORS;
-
-  // TODO freeNode - what does it do?
 }
 
 linkedListError linkedListDestruct(linkedList *list) {
@@ -50,46 +38,30 @@ linkedListError linkedListDestruct(linkedList *list) {
   list->capacity = -1;
   list->freeNode = -1;
 
-  // TODO LOTS OF MACRO FOR FREE
+  free(list->data);
+  free(list->prev);
+  free(list->next);
 
-  size_t nodeIndex = 0;
-  linkedListNode *currentNode = list->head;
+  list->data = NULL;
+  list->prev = NULL;
+  list->next = NULL;
 
-  while (currentNode != list->tail) {
-    // fprintf(stderr, "\nBEFORE SHIFT: %p\n", currentNode);
-    currentNode = currentNode->nextListNode;
-    // fprintf(stderr, "NOW: %p\n\t DELETE: %p\n", currentNode, currentNode->previousListNode);
-    free(currentNode->previousListNode);
-    currentNode->previousListNode = NULL;
-  }
-
-  free(currentNode);
-  currentNode = NULL;
-
-  list->root = NULL;
-  list->head = NULL;
-  list->tail = NULL;
+  // TODO MACRO
 
   return NO_ERRORS;
 }
 
 linkedListError linkedListVerify    (linkedList *list) {
   // TODO do list with errors like in stack instead of custom warnings
-  customWarning(list           != NULL, LIST_BAD_POINTER);
-  customWarning(list->head     != NULL, BAD_HEAD);
-  customWarning(list->tail     != NULL, BAD_TAIL);
-  customWarning(list->capacity < 0,     BAD_CAPACITY);
+  customWarning(list           != NULL,                                LIST_BAD_POINTER    );
+  customWarning(list->data     != NULL,                                DATA_BAD_POINTER    );
+  customWarning(list->prev     != NULL,                                PREVIOUS_BAD_POINTER);
+  customWarning(list->next     != NULL,                                NEXT_BAD_POINTER    );
+  customWarning(list->capacity < 0,                                    BAD_CAPACITY        );
+  customWarning(list->prev[0]  < 0 || list->prev[0] >= list->capacity, BAD_TAIL            );
+  customWarning(list->next[0]  < 0 || list->prev[0] >= list->capacity, BAD_HEAD            );
 
-  // TODO MACRO OR FUNCTION TO BYPASS ALL NODES
-  linkedListNode *currentNode = list->head;
-
-  while (currentNode) {
-    customWarning(currentNode->data             != POISON_VALUE, DATA_BAD_VALUE);
-    customWarning(currentNode->previousListNode != NULL,         PREVIOUS_BAD_POINTER);
-    customWarning(currentNode->nextListNode     != NULL,         NEXT_BAD_POINTER);
-
-    currentNode = currentNode->nextListNode;
-  }
+  // TODO CHECK freeNode?
 
   // TODO MORE CHECKS
 
@@ -101,17 +73,42 @@ linkedListError linkedListDump      (linkedList *list) {
   return NO_ERRORS;
 }
 
-linkedListError insertNode          (linkedList *node, size_t index, elem_t data) {
-  customWarning(node != NULL, NODE_BAD_POINTER);
-  // TODO
+linkedListError insertNode          (linkedList *list, size_t index, elem_t value) {
+  customWarning(list != NULL, NODE_BAD_POINTER);
+  // TODO CHECK INDEX, CAPACITY
+
+  ssize_t newIndex = list->freeNode;
+  list->freeNode   = list->next[list->freeNode];
+
+  list->prev[list->next[index]] = newIndex;
+  list->prev[newIndex]          = index;
+
+  list->next[index]             = newIndex;
+  list->next[newIndex]          = list->next[index];
+
+  list->data[newIndex] = value;
+
   return NO_ERRORS;
 }
 
-linkedListError deleteNode          (linkedList *node) {
+linkedListError deleteNode          (linkedList *list, size_t index) {
+  customWarning(list != NULL, LIST_BAD_POINTER);
+  // TODO CHECKER
+
+  list->data[index + 1] = POISON_VALUE;
+
+  list->prev[list->next[index]] = list->prev[index];
+  list->next[list->prev[index]] = list->next[index];
+
+  list->next[index] = list->freeNode;
+  list->prev[index] = -1;
+  list->freeNode    = index;
+
+
   return NO_ERRORS;
 }
 
-linkedListError getNode             (linkedList *node) {
+linkedListError getNode             (linkedList *list, size_t index) {
   return NO_ERRORS;
 }
 
