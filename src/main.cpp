@@ -6,17 +6,23 @@
 int main() {
   linkedList LIST = {};
   linkedListInitialize(&LIST, 10);
-  linkedListNode *CURRENT_NODE = LIST.head;
-  // fprintf(stderr, "HEAD: %p\n", CURRENT_NODE);
-  // fprintf(stderr, "TAIL: %p\n", LIST.tail);
+  insertNode(&LIST, 0, 111);
+  insertNode(&LIST, 3, 5);
+  insertNode(&LIST, 4, 10);
 
-  while (CURRENT_NODE) {
-    // fprintf(stderr, "NOW: %p\t AFTER: %p\n", CURRENT_NODE, CURRENT_NODE->nextListNode);
-    CURRENT_NODE = CURRENT_NODE->nextListNode;
+  for (int i = 0; i < 10; i++) {
+    printf("|%-5d| ", LIST.data[i]);
+  }
+
+  printf("\n");
+
+  deleteNode(&LIST, 3);
+  deleteNode(&LIST, 0);
+
+  for (int i = 0; i < 10; i++) {
+    printf("|%-5d| ", LIST.data[i]);
   }
 
   linkedListDestruct(&LIST);
-
-  // printf("%p %p %p", LIST.head, LIST.root, LIST.tail);
   return 0;
 }
