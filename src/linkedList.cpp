@@ -1,35 +1,50 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "linkedList.h"
-#include "customWarning/customWarning.h"
+#include "../include/linkedList.h"
+#include "../customWarning/customWarning.h"
 
 linkedListError linkedListInitialize(linkedList *list, size_t capacity) {
   customWarning(list != NULL, LIST_BAD_POINTER);
 
   list->capacity = (ssize_t)capacity + 1;
 
-  list->head     = (linkedListNode *)calloc(1, sizeof(linkedListNode));
-  list->tail     = (linkedListNode *)calloc(1, sizeof(linkedListNode));
+  list->root = (linkedListNode *)calloc(1, sizeof(linkedListNode));
+  customWarning(list->root != NULL, ROOT_BAD_POINTER);
 
-  customWarning(list->head != NULL, BAD_HEAD);
-  customWarning(list->tail != NULL, BAD_TAIL);
+  list->head = list->root;
+  list->tail = list->root;
 
-  // TODO MACRO INITIALIZE BEGIN AND END NODE'S (OR FUNCTIONS, IMHO MACRO BETTER)
-  list->head->data             = 0;
-  list->head->previousListNode = list->tail;
-  list->head->nextListNode     = list->tail;
+  list->root->data             = 0;
+  list->root->previousListNode = NULL;
+  list->root->nextListNode     = NULL;
 
-  list->tail->data             = 0;
-  list->tail->previousListNode = list->head;
-  list->tail->nextListNode     = list->head;
+  size_t nodeIndex = 0;
+  linkedListNode *currentNode = list->head;
+
+  while (currentNode && nodeIndex < list->capacity) {
+    linkedListNode *nextNode = (linkedListNode *)calloc(1, sizeof(linkedListNode));
+
+    customWarning(nextNode != NULL, NODE_BAD_POINTER);
+
+    nextNode->data             = 0;
+    nextNode->previousListNode = currentNode;
+    nextNode->nextListNode     = NULL;
+
+    currentNode->nextListNode  = nextNode;
+
+    currentNode = currentNode->nextListNode;
+    nodeIndex++;
+
+    list->tail = currentNode;
+  }
 
   return NO_ERRORS;
 
   // TODO freeNode - what does it do?
 }
 
-linkedListError linkedListDestruct  (linkedList *list) {
+linkedListError linkedListDestruct(linkedList *list) {
   customWarning(list != NULL, LIST_BAD_POINTER);
 
   list->capacity = -1;
@@ -37,21 +52,21 @@ linkedListError linkedListDestruct  (linkedList *list) {
 
   // TODO LOTS OF MACRO FOR FREE
 
-  free(list->head->previousListNode);
-  free(list->head->nextListNode);
+  size_t nodeIndex = 0;
+  linkedListNode *currentNode = list->head;
 
-  list->head->previousListNode = NULL;
-  list->head->nextListNode     = NULL;
+  while (currentNode != list->tail) {
+    // fprintf(stderr, "\nBEFORE SHIFT: %p\n", currentNode);
+    currentNode = currentNode->nextListNode;
+    // fprintf(stderr, "NOW: %p\n\t DELETE: %p\n", currentNode, currentNode->previousListNode);
+    free(currentNode->previousListNode);
+    currentNode->previousListNode = NULL;
+  }
 
-  free(list->tail->previousListNode);
-  free(list->tail->nextListNode);
+  free(currentNode);
+  currentNode = NULL;
 
-  list->tail->previousListNode = NULL;
-  list->tail->nextListNode     = NULL;
-
-  free(list->head);
-  free(list->tail);
-
+  list->root = NULL;
   list->head = NULL;
   list->tail = NULL;
 
@@ -77,20 +92,28 @@ linkedListError linkedListVerify    (linkedList *list) {
   }
 
   // TODO MORE CHECKS
+
+  return NO_ERRORS;
 }
 
 linkedListError linkedListDump      (linkedList *list) {
   printf("\033[1;33mhui hui bolshoi zhirny cherny hui pisya popa hui chlenik\n\033[0m");
+  return NO_ERRORS;
 }
 
 linkedListError insertNode          (linkedList *node, size_t index, elem_t data) {
   customWarning(node != NULL, NODE_BAD_POINTER);
   // TODO
+  return NO_ERRORS;
 }
 
-linkedListError deleteNode          (linkedList *node) {}
+linkedListError deleteNode          (linkedList *node) {
+  return NO_ERRORS;
+}
 
-linkedListError getNode             (linkedList *node) {}
+linkedListError getNode             (linkedList *node) {
+  return NO_ERRORS;
+}
 
 
 
