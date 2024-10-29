@@ -1,8 +1,11 @@
+#ifndef LINKED_LIST_H_
+#define LINKED_LIST_H_
+
 #include <cstdlib>
 
 typedef int elem_t;
 
-elem_t POISON_VALUE = -666;
+const elem_t POISON_VALUE = -666;
 
 struct linkedListNode {
   elem_t          data             = {};
@@ -11,6 +14,7 @@ struct linkedListNode {
 };
 
 struct linkedList {
+  linkedListNode *root             = {};
   linkedListNode *head             = {};
   linkedListNode *tail             = {};
   ssize_t         capacity         = -1;
@@ -26,7 +30,8 @@ enum linkedListError {
   BAD_CAPACITY         = 5,
   BAD_HEAD             = 6,
   BAD_TAIL             = 7,
-  NODE_BAD_POINTER     = 8
+  NODE_BAD_POINTER     = 8,
+  ROOT_BAD_POINTER     = 9
 };
 
 // FUNCTION PROTOTYPES //
@@ -34,7 +39,9 @@ linkedListError linkedListInitialize(linkedList     *list, size_t  capacity     
 linkedListError linkedListDestruct  (linkedList     *list                              );
 linkedListError linkedListVerify    (linkedList     *list                              );
 linkedListError linkedListDump      (linkedList     *list                              );
-linkedListError insertNode          (linkedListNode *node, ssize_t index,   elem_t data);
+linkedListError insertNode          (linkedListNode *node, elem_t data                 );
 linkedListError deleteNode          (linkedListNode *node                              );
 linkedListError getNode             (linkedListNode *node                              );
 // FUNCTION PROTOTYPES //
+
+#endif // LINKED_LIST_H_
