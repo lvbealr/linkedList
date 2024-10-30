@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
+#include <memory.h>
 
 #include "linkedList.h"
 #include "customWarning.h"
@@ -11,6 +12,7 @@ linkedListError linkedListInitialize(linkedList *list, size_t capacity) {
 
   list->capacity = (ssize_t)capacity + 1;
 
+  // list->data     = (elem_t  *)customCalloc((size_t)list->capacity, sizeof(elem_t), 666);
   list->data     = (elem_t  *)calloc((size_t)list->capacity, sizeof(elem_t));
   list->prev     = (ssize_t *)calloc((size_t)list->capacity, sizeof(ssize_t));
   list->next     = (ssize_t *)calloc((size_t)list->capacity, sizeof(ssize_t));
@@ -43,15 +45,9 @@ linkedListError linkedListDestruct(linkedList *list) {
   list->capacity = -1;
   list->freeNode = -1;
 
-  free(list->data);
-  free(list->prev);
-  free(list->next);
-
-  list->data = NULL;
-  list->prev = NULL;
-  list->next = NULL;
-
-  // TODO MACRO
+  FREE_(list->data);
+  FREE_(list->prev);
+  FREE_(list->next);
 
   return NO_ERRORS;
 }
@@ -110,6 +106,8 @@ linkedListError deleteNode          (linkedList *list, ssize_t index) {
   list->prev[index] = -1;                            // эмэаээаэаэа надо подумать поч невалидный поинтер на предыдущую 🤔🤔🤔🤔🤔
   list->freeNode    = index;                         // ячейка, которую занимала В, теперь свободна
   // TODO это как будто не совсем правильно, наверное узлы должны сдвигаться друг к другу? так между ними пустые узлы
+  // UPD: нет вроде нормально
+
   return NO_ERRORS;
 }
 

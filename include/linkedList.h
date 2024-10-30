@@ -7,6 +7,11 @@ typedef int elem_t;
 
 const elem_t POISON_VALUE = -666;
 
+#define FREE_(field) { \
+    free(field);       \
+    field = NULL;      \
+  }
+
 struct linkedList {
   elem_t         *data             = {};
   ssize_t        *prev             = {};
