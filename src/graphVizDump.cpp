@@ -18,7 +18,7 @@ char *setDumpFileName(const char *dumpFolder) {
 
   customWarning(fileName != NULL, NULL);
 
-  snprintf(fileName, FILENAME_MAX, "%s/%.2d.%.2d.%.4d-%.2d:%.2d:%.2d.dot",
+  snprintf(fileName, FILENAME_MAX, "%s/%.2d.%.2d.%.4d-%.2d:%.2d:%.2d",
                                     dumpFolder, localTime.tm_mday, localTime.tm_mon,
                                     localTime.tm_year + 1900, localTime.tm_hour, localTime.tm_min, localTime.tm_sec);
 
@@ -28,8 +28,9 @@ char *setDumpFileName(const char *dumpFolder) {
 linkedListError linkedListDump(linkedList *list) {
   customWarning(list != NULL, LIST_BAD_POINTER);
 
-  const char *dumpFileName = setDumpFileName(list->infoData->dumpFolderName);
+  char *dumpFileName = setDumpFileName(list->infoData->dumpFolderName);
   strncpy(list->infoData->dumpFileName,   dumpFileName, MAX_DUMP_FILE_NAME);
+  strcat(list->infoData->dumpFileName,    ".dot");
 
   FILE *dumpFile = fopen(list->infoData->dumpFileName, "w");
   customWarning(dumpFile != NULL, DUMP_FILE_BAD_POINTER);
@@ -111,80 +112,19 @@ linkedListError linkedListDump(linkedList *list) {
   char *buffer = (char *)calloc(MAX_CMD_BUFFER_SIZE, sizeof(char));
   customWarning(buffer != NULL, BAD_BUFFER_POINTER);
 
-  snprintf(buffer, MAX_CMD_BUFFER_SIZE, "dot -Tsvg %s -o %s.svg", list->infoData->dumpFileName, list->infoData->dumpFileName);
+  writeHtmlHeader(list);
+
+  snprintf(buffer, MAX_CMD_BUFFER_SIZE, "dot -Tsvg %s >> %s", list->infoData->dumpFileName, list->infoData->htmlDumpFileName);
   system(buffer);
 
   FREE_(buffer);
 
-  char *pathToFile = (char *)calloc(MAX_PATH_TO_FILE, sizeof(char));
-  customWarning(pathToFile != NULL, BAD_PATH_TO_DUMP_FILE_POINTER);
-
-  snprintf(pathToFile, MAX_PATH_TO_FILE, "%s.svg", list->infoData->dumpFileName);
-
-  dumpToHtml(list, pathToFile, "graphVizDumps/graphVizDump.html"); // TODO html file
-  FREE_(pathToFile);
-
   return NO_ERRORS;
 }
 
-linkedListError dumpToHtml(linkedList *list, const char *pathToFile, const char *pathToHtml) {
-  customWarning(list       != NULL, LIST_BAD_POINTER     );
-  customWarning(pathToFile != NULL, DUMP_FILE_BAD_POINTER);
-
-  writeHtmlHeader(list, pathToHtml);
-
-  svgFile file = {};
-
-  getSvgFileInfo(list, pathToFile, &file);
-  writeSvgToHtml(pathToHtml, &file);
-
-  FREE_(file.data);
-  file = {};
-
-  return NO_ERRORS;
-}
-
-linkedListError getSvgFileInfo(linkedList *list, const char *pathToFile, svgFile *file) {
-  customWarning(list       != NULL, LIST_BAD_POINTER             );
-  customWarning(pathToFile != NULL, BAD_PATH_TO_DUMP_FILE_POINTER);
-
-  struct stat fileData = {};
-  stat(pathToFile, &fileData);
-
-  file->size = fileData.st_size;
-
-  file->data = (char *)calloc(file->size, sizeof(char));
-  customWarning(file->data != NULL, BAD_DUMP_TEXT_POINTER);
-
-  int openFile = open(pathToFile, O_RDONLY);
-  customWarning(openFile != NO_SUCH_FILE, NO_SUCH_FILE);
-
-  ssize_t sizeRead = read(openFile, file->data, file->size);
-  customWarning(sizeRead == (ssize_t)file->size, BAD_READ_DUMP_FILE);
-
-  close(openFile);
-
-  return NO_ERRORS;
-}
-
-linkedListError writeSvgToHtml(const char *pathToHtml, svgFile *file) {
-  customWarning(pathToHtml != NULL, DUMP_FILE_BAD_POINTER);
-  customWarning(file       != NULL, INFO_NULL_POINTER);
-
-  int openFile = open(pathToHtml, O_WRONLY | O_APPEND);
-  customWarning(openFile != NO_SUCH_FILE, NO_SUCH_FILE);
-
-  ssize_t writeFile = write(openFile, file->data, file->size);
-  customWarning(writeFile == file->size, BAD_WRITE_DUMP_FILE);
-
-  close(openFile);
-
-  return NO_ERRORS;
-}
-
-linkedListError writeHtmlHeader(linkedList *list, const char *pathToHtml) {
+linkedListError writeHtmlHeader(linkedList *list) {
   customWarning(list       != NULL, LIST_BAD_POINTER);
-  customWarning(pathToHtml != NULL, DUMP_FILE_BAD_POINTER);
+  customWarning(list->infoData->htmlDumpFileName != NULL, DUMP_FILE_BAD_POINTER);
 
   char *header = (char *)calloc(MAX_HEADER_SIZE, sizeof(char));
   snprintf(header, MAX_HEADER_SIZE, "<br><br><div style='font-size:22px'><b><u>linkedList</u><font color='DeepSkyBlue'>" " [%p]" "</font></b>"
@@ -193,12 +133,10 @@ linkedListError writeHtmlHeader(linkedList *list, const char *pathToHtml) {
           list, list->infoData->lastUsedFileName, list->infoData->lastUsedLine, list->infoData->lastUsedFunctionName,
                 list->infoData->bornFileName,     list->infoData->bornLine,     list->infoData->bornFunctionName);
 
-  int openFile = open(pathToHtml, O_WRONLY | O_APPEND);
+  int openFile = open(list->infoData->htmlDumpFileName, O_WRONLY | O_APPEND);
   customWarning(openFile != NO_SUCH_FILE, NO_SUCH_FILE);
 
   ssize_t writeFile = write(openFile, header, MAX_HEADER_SIZE);
-  // customWarning(writeFile == (ssize_t)file->size, BAD_WRITE_DUMP_FILE); // TODO передавать структурку с текстом,
-                                                                           // TODO закинуть имя html в эту структуру
 
   close(openFile);
 
