@@ -8,7 +8,7 @@
 #include "graphVizDump.h"
 #include "customWarning.h"
 
-static const size_t MAX_HEADER_SIZE     = 300;
+static const size_t MAX_HEADER_SIZE     = 500;
 
 char *setDumpFileName(const char *dumpFolder) {
   const time_t currentTime = time(NULL);
@@ -24,8 +24,6 @@ char *setDumpFileName(const char *dumpFolder) {
 
   return fileName;
 }
-
-// TODO add enums for working with file
 
 linkedListError linkedListDump(linkedList *list) {
   customWarning(list != NULL, LIST_BAD_POINTER);
@@ -111,7 +109,7 @@ linkedListError linkedListDump(linkedList *list) {
   fclose(dumpFile);
 
   char *buffer = (char *)calloc(MAX_CMD_BUFFER_SIZE, sizeof(char));
-  customWarning(buffer != NULL, BAD_BUFFER_POINTER); // TODO
+  customWarning(buffer != NULL, BAD_BUFFER_POINTER);
 
   snprintf(buffer, MAX_CMD_BUFFER_SIZE, "dot -Tsvg %s -o %s.svg", list->infoData->dumpFileName, list->infoData->dumpFileName);
   system(buffer);
@@ -119,7 +117,7 @@ linkedListError linkedListDump(linkedList *list) {
   FREE_(buffer);
 
   char *pathToFile = (char *)calloc(MAX_PATH_TO_FILE, sizeof(char));
-  customWarning(pathToFile != NULL, BAD_BUFFER_POINTER); // TODO
+  customWarning(pathToFile != NULL, BAD_PATH_TO_DUMP_FILE_POINTER);
 
   snprintf(pathToFile, MAX_PATH_TO_FILE, "%s.svg", list->infoData->dumpFileName);
 
@@ -147,8 +145,8 @@ linkedListError dumpToHtml(linkedList *list, const char *pathToFile, const char 
 }
 
 linkedListError getSvgFileInfo(linkedList *list, const char *pathToFile, svgFile *file) {
-  customWarning(list       != NULL, LIST_BAD_POINTER     );
-  customWarning(pathToFile != NULL, DUMP_FILE_BAD_POINTER); // TODO
+  customWarning(list       != NULL, LIST_BAD_POINTER             );
+  customWarning(pathToFile != NULL, BAD_PATH_TO_DUMP_FILE_POINTER);
 
   struct stat fileData = {};
   stat(pathToFile, &fileData);
@@ -156,13 +154,13 @@ linkedListError getSvgFileInfo(linkedList *list, const char *pathToFile, svgFile
   file->size = fileData.st_size;
 
   file->data = (char *)calloc(file->size, sizeof(char));
-  customWarning(file->data != NULL, DUMP_FILE_BAD_POINTER); // TODO заебало уже прдумывать неймы для enumов
+  customWarning(file->data != NULL, BAD_DUMP_TEXT_POINTER);
 
   int openFile = open(pathToFile, O_RDONLY);
-  // customWarning(openFile != -1, ) // TODO короче еще один кастом ворнинг на открытый файл
+  customWarning(openFile != NO_SUCH_FILE, NO_SUCH_FILE);
 
   ssize_t sizeRead = read(openFile, file->data, file->size);
-  // customWarning(sizeRead == file.size, ) // TODO еще один ворнинг на размер файла мб взять с онегина enum
+  customWarning(sizeRead == (ssize_t)file->size, BAD_READ_DUMP_FILE);
 
   close(openFile);
 
@@ -170,14 +168,14 @@ linkedListError getSvgFileInfo(linkedList *list, const char *pathToFile, svgFile
 }
 
 linkedListError writeSvgToHtml(const char *pathToHtml, svgFile *file) {
-  customWarning(pathToHtml != NULL, DUMP_FILE_BAD_POINTER); // TODO
-  // customWarning(file != NULL, ) // TODO
+  customWarning(pathToHtml != NULL, DUMP_FILE_BAD_POINTER);
+  customWarning(file       != NULL, INFO_NULL_POINTER);
 
   int openFile = open(pathToHtml, O_WRONLY | O_APPEND);
-  // customWarning(openFile != -1, ) // TODO
+  customWarning(openFile != NO_SUCH_FILE, NO_SUCH_FILE);
 
   ssize_t writeFile = write(openFile, file->data, file->size);
-  // customWarning() // TODO
+  customWarning(writeFile == file->size, BAD_WRITE_DUMP_FILE);
 
   close(openFile);
 
@@ -189,15 +187,18 @@ linkedListError writeHtmlHeader(linkedList *list, const char *pathToHtml) {
   customWarning(pathToHtml != NULL, DUMP_FILE_BAD_POINTER);
 
   char *header = (char *)calloc(MAX_HEADER_SIZE, sizeof(char));
-  snprintf(header, MAX_HEADER_SIZE, "<br><br><div style='font-size:22px'>linkedList [%p] at %s:%d (%s)<br>born at %s:%d (%s)<br><br></div>",
+  snprintf(header, MAX_HEADER_SIZE, "<br><br><div style='font-size:22px'><b><u>linkedList</u><font color='DeepSkyBlue'>" " [%p]" "</font></b>"
+                                    " at <b><u>%s:%d</u> <u>(%s)</u></b> <font color='DarkOrange'><b><br>born at</b></font>"
+                                    " <b><u>%s:%d</u></b> (%s)<br><br></div>",
           list, list->infoData->lastUsedFileName, list->infoData->lastUsedLine, list->infoData->lastUsedFunctionName,
                 list->infoData->bornFileName,     list->infoData->bornLine,     list->infoData->bornFunctionName);
 
   int openFile = open(pathToHtml, O_WRONLY | O_APPEND);
-  // customWarning // TODO
+  customWarning(openFile != NO_SUCH_FILE, NO_SUCH_FILE);
 
   ssize_t writeFile = write(openFile, header, MAX_HEADER_SIZE);
-  // customWarning // TODO
+  // customWarning(writeFile == (ssize_t)file->size, BAD_WRITE_DUMP_FILE); // TODO передавать структурку с текстом,
+                                                                           // TODO закинуть имя html в эту структуру
 
   close(openFile);
 
