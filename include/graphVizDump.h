@@ -16,12 +16,9 @@ const size_t MAX_PATH_TO_FILE     = 100;
 const size_t MAX_CMD_BUFFER_SIZE  = 100;
 
 // FUNCTION PROTOTYPES //
-linkedListError linkedListDump (linkedList *list); // TODO PRINT FUNC ARGUMENTS WITH VA ARGS
+linkedListError linkedListDump (linkedList *list);
 char           *setDumpFileName(const char *dumpFolder);
-linkedListError dumpToHtml     (linkedList *list, const char *pathToFile, const char *pathToHtml);
-linkedListError getSvgFileInfo (linkedList *list, const char *pathToFile, svgFile    *file);
-linkedListError writeSvgToHtml (const char *pathToHtml, svgFile *file);
-linkedListError writeHtmlHeader(linkedList *list, const char *pathToHtml);
+linkedListError writeHtmlHeader(linkedList *list);
 // FUNCTION PROTOTYPES //
 
 #endif // GRAPH_VIZ_DUMP_H_
