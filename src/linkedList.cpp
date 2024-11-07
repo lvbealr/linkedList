@@ -65,9 +65,9 @@ linkedListError linkedListInitialize(linkedList *list, size_t capacity) {
 
   list->infoData = (linkedListInfo *)calloc(1, sizeof(linkedListInfo));
 
-  CHECK_ERROR(list, list->data != NULL,     DATA_BAD_POINTER);
+  CHECK_ERROR(list, list->data != NULL, DATA_BAD_POINTER    );
   CHECK_ERROR(list, list->prev != NULL, PREVIOUS_BAD_POINTER);
-  CHECK_ERROR(list, list->next != NULL,     NEXT_BAD_POINTER);
+  CHECK_ERROR(list, list->next != NULL, NEXT_BAD_POINTER    );
 
   list->prev[0]  = 0;
   list->next[0]  = 0;
@@ -90,13 +90,13 @@ linkedListError linkedListInfoInitialize(linkedList *list, const char *fileName,
   customWarning(functionPrototype != NULL, BAD_FUNC_NAME_POINTER);
   customWarning(line               >    0, BAD_BORN_LINE_VALUE);
 
-  list->infoData->bornFileName         = (char *)calloc(MAX_BORN_FILE_NAME,   sizeof(char));
+  list->infoData->bornFileName         = (char *)calloc(MAX_FILE_NAME_SIZE,   sizeof(char));
   list->infoData->bornFunctionName     = (char *)calloc(MAX_BORN_FUNC_NAME,   sizeof(char));
   list->infoData->bornLine             = line;
   list->infoData->dumpFolderName       = (char *)calloc(MAX_DUMP_FOLDER_NAME, sizeof(char));
   list->infoData->dumpFileName         = (char *)calloc(MAX_DUMP_FILE_NAME,   sizeof(char));
-  list->infoData->lastUsedFileName     = (char *)calloc(MAX_BORN_FILE_NAME,   sizeof(char)); // TODO RENAME COMMON CONSTANT
-  list->infoData->lastUsedFunctionName = (char *)calloc(MAX_BORN_FUNC_NAME,   sizeof(char)); // TODO
+  list->infoData->lastUsedFileName     = (char *)calloc(MAX_FILE_NAME_SIZE,   sizeof(char));
+  list->infoData->lastUsedFunctionName = (char *)calloc(MAX_BORN_FUNC_NAME,   sizeof(char));
   list->infoData->lastUsedLine         = line;
   list->infoData->htmlDumpFileName     = (char *)calloc(MAX_DUMP_FILE_NAME,   sizeof(char));
 
@@ -108,7 +108,7 @@ linkedListError linkedListInfoInitialize(linkedList *list, const char *fileName,
   CHECK_ERROR(list, list->infoData->lastUsedFunctionName != NULL, INFO_NULL_POINTER);
   CHECK_ERROR(list, list->infoData->htmlDumpFileName     != NULL, INFO_NULL_POINTER);
 
-  strncpy(list->infoData->bornFileName,     fileName,          MAX_BORN_FILE_NAME);
+  strncpy(list->infoData->bornFileName,     fileName,          MAX_FILE_NAME_SIZE);
   strncpy(list->infoData->bornFunctionName, functionPrototype, MAX_BORN_FUNC_NAME);
 
   const char *dumpFolderName = "graphVizDumps"; // TODO by console i think, check makefile!!!
@@ -117,8 +117,8 @@ linkedListError linkedListInfoInitialize(linkedList *list, const char *fileName,
   const char *dumpFileName   = setDumpFileName(list->infoData->dumpFolderName);
   strncpy(list->infoData->dumpFileName,   dumpFileName, MAX_DUMP_FILE_NAME);
 
-  DUMP_(list);            // !
-  DELETE_TEMP_FILE(list); // !
+  DUMP_(list);
+  DELETE_TEMP_FILE(list);
 
   return NO_ERRORS;
 }
@@ -126,8 +126,8 @@ linkedListError linkedListInfoInitialize(linkedList *list, const char *fileName,
 linkedListError linkedListDestruct(linkedList *list) {
   customWarning(list != NULL, LIST_BAD_POINTER);
 
-  DUMP_(list);         // !
-  saveDumpImage(list); // !
+  DUMP_(list);
+  saveDumpImage(list);
 
   list->capacity  = -1;
   list->freeNode  = -1;
@@ -178,8 +178,8 @@ linkedListError linkedListVerify    (linkedList *list) {
     }
   }
 
-  DUMP_(list);            // !
-  DELETE_TEMP_FILE(list); // !
+  DUMP_(list);
+  DELETE_TEMP_FILE(list);
 
   return NO_ERRORS;
 }
@@ -187,8 +187,8 @@ linkedListError linkedListVerify    (linkedList *list) {
 linkedListError insertNode          (linkedList *list, ssize_t index, ssize_t *newIndex, elem_t value) {
   customWarning(list != NULL, NODE_BAD_POINTER);
 
-  CHECK_ERROR(list, index             >=  0 && index < list->capacity,    BAD_INDEX);
-  CHECK_ERROR(list, list->prev[index] !=                           -1,    BAD_INDEX);
+  CHECK_ERROR(list, index             >=  0 && index < list->capacity, BAD_INDEX   );
+  CHECK_ERROR(list, list->prev[index] !=                           -1, BAD_INDEX   );
   CHECK_ERROR(list, list->freeNode    !=                            0, BAD_CAPACITY);
 
   *newIndex                     = list->freeNode;
@@ -201,8 +201,8 @@ linkedListError insertNode          (linkedList *list, ssize_t index, ssize_t *n
 
   list->next[index]             = *newIndex;
 
-  DUMP_(list);            // !
-  DELETE_TEMP_FILE(list); // !
+  DUMP_(list);
+  DELETE_TEMP_FILE(list);
 
   linkedListVerify(list);
 
@@ -224,8 +224,8 @@ linkedListError deleteNode          (linkedList *list, ssize_t index) {
   list->prev[index] = -1;
   list->freeNode    = index;
 
-  DUMP_(list);            // !
-  DELETE_TEMP_FILE(list); // !
+  DUMP_(list);
+  DELETE_TEMP_FILE(list);
 
   linkedListVerify(list);
 
@@ -235,13 +235,13 @@ linkedListError deleteNode          (linkedList *list, ssize_t index) {
 linkedListError getNodeValue         (linkedList *list, ssize_t index, elem_t *value) {
   customWarning(list != NULL, LIST_BAD_POINTER);
 
-  CHECK_ERROR  (list, index >= 0 && index < list->capacity,            BAD_INDEX);
+  CHECK_ERROR  (list, index >= 0 && index < list->capacity, BAD_INDEX           );
   CHECK_ERROR  (list, value !=                        NULL, BAD_GET_NODE_POINTER);
 
   *value = list->data[index];
 
-  DUMP_(list);            // !
-  DELETE_TEMP_FILE(list); // !
+  DUMP_(list);
+  DELETE_TEMP_FILE(list);
 
   linkedListVerify(list);
 
