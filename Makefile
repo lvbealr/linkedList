@@ -43,7 +43,6 @@ all:
 	@make -s clean
 	make quickList
 	@mkdir -p graphVizDumps
-	@touch graphVizDumps/graphVizDump.html
 	@printf "\n$(CYAN_TEXT)RUNNING...\n\n$(DEFAULT_TEXT)"
 	@$(addprefix $(BUILD_DIR), $(TARGET))
 
@@ -62,7 +61,6 @@ quickList: $(addprefix $(SRC_DIR), $(LIST_SRC))
 	@$(CXX) $(CFLAGS) $^ $(SUBMODULE_SRC) -o $(addprefix $(BUILD_DIR), $(TARGET))
 
 clean:
-	@printf "$(GREEN_TEXT)► $(CYAN_TEXT)build/ $(DEFAULT_BOLD_TEXT)and $(CYAN_TEXT)dumps/ $(DEFAULT_BOLD_TEXT)were removed!\n$(DEFAULT_TEXT)"
+	@printf "$(GREEN_TEXT)► $(CYAN_TEXT)build/ $(DEFAULT_BOLD_TEXT)and $(CYAN_TEXT)graphVizDumps/ $(DEFAULT_BOLD_TEXT)were removed!\n$(DEFAULT_TEXT)"
 	@rm -rf build
-	@rm -rf dumps
-	@rm -rf graphVizDumps/graphVizDump.html
+	@rm -rf graphVizDumps
