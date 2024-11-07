@@ -29,14 +29,20 @@
 }
 
 #define saveDumpImage(listPtr) { \
-  char *buffer = (char *)calloc(MAX_CMD_BUFFER_SIZE, sizeof(char));     \
-  customWarning(buffer != NULL, BAD_BUFFER_POINTER);                    \
-                                                                        \
-  snprintf(buffer, MAX_CMD_BUFFER_SIZE, "dot -Tsvg %s -o %s.svg",       \
-           list->infoData->dumpFileName, list->infoData->dumpFileName); \
-  system(buffer);                                                       \
-                                                                        \
-  FREE_(buffer);                                                        \
+  char *buffer = (char *)calloc(MAX_CMD_BUFFER_SIZE, sizeof(char));               \
+  customWarning(buffer != NULL, BAD_BUFFER_POINTER);                              \
+                                                                                  \
+  snprintf(buffer, MAX_CMD_BUFFER_SIZE, "dot -Tsvg %s -o %s.svg",                 \
+           (listPtr)->infoData->dumpFileName, (listPtr)->infoData->dumpFileName); \
+  system(buffer);                                                                 \
+                                                                                  \
+  *buffer = {};                                                                   \
+  snprintf(buffer, MAX_CMD_BUFFER_SIZE, "rm -rf %s/*.dot",                        \
+          (listPtr)->infoData->dumpFolderName);                                   \
+                                                                                  \
+  system(buffer);                                                                 \
+                                                                                  \
+  FREE_(buffer);                                                                  \
 }
 
 static linkedListError fillWithPoison(linkedList *list) {
@@ -48,7 +54,6 @@ static linkedListError fillWithPoison(linkedList *list) {
     list->data[index] = POISON_VALUE;
   }
 
-  // DUMP_(list); // ! подумтаь куда перенести пойзоновку либо не делать дамп здесь
   linkedListVerify(list);
 
   return NO_ERRORS;
@@ -111,11 +116,24 @@ linkedListError linkedListInfoInitialize(linkedList *list, const char *fileName,
   strncpy(list->infoData->bornFileName,     fileName,          MAX_FILE_NAME_SIZE);
   strncpy(list->infoData->bornFunctionName, functionPrototype, MAX_BORN_FUNC_NAME);
 
-  const char *dumpFolderName = "graphVizDumps"; // TODO by console i think, check makefile!!!
+  const char *dumpFolderName = "graphVizDumps"; // TODO by console i think
   strncpy(list->infoData->dumpFolderName, dumpFolderName, MAX_DUMP_FOLDER_NAME);
 
   const char *dumpFileName   = setDumpFileName(list->infoData->dumpFolderName);
   strncpy(list->infoData->dumpFileName,   dumpFileName, MAX_DUMP_FILE_NAME);
+  strcat(list->infoData->dumpFileName,    ".dot");
+
+  const char *htmlDumpFileName = setDumpFileName(list->infoData->dumpFolderName);
+  strncpy(list->infoData->htmlDumpFileName, htmlDumpFileName, MAX_DUMP_FILE_NAME);
+  strcat(list->infoData->htmlDumpFileName, ".html");
+
+  char *buffer = (char *)calloc(MAX_CMD_BUFFER_SIZE, sizeof(char));
+  customWarning(buffer != NULL, BAD_BUFFER_POINTER);
+
+  snprintf(buffer, MAX_CMD_BUFFER_SIZE, "touch %s", list->infoData->htmlDumpFileName);
+  system(buffer);
+
+  FREE_(buffer);
 
   DUMP_(list);
   DELETE_TEMP_FILE(list);
@@ -147,8 +165,9 @@ linkedListError linkedListInfoDestruct(linkedList *list) {
 
   FREE_(list->infoData->bornFileName    );
   FREE_(list->infoData->bornFunctionName);
-  FREE_(list->infoData->dumpFileName    );
   FREE_(list->infoData->dumpFolderName  );
+  FREE_(list->infoData->dumpFileName    );
+  FREE_(list->infoData->htmlDumpFileName);
 
   list->infoData->bornLine = 0;
 
