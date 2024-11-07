@@ -1,6 +1,6 @@
 CXX           = g++
 
-LIST_SRC      = main.cpp linkedList.cpp
+LIST_SRC      = main.cpp linkedList.cpp graphVizDump.cpp
 
 TARGET        = list
 
@@ -42,6 +42,8 @@ vpath %.cpp $(SRC_DIR)
 all:
 	@make -s clean
 	make quickList
+	@mkdir -p graphVizDumps
+	@touch graphVizDumps/graphVizDump.html
 	@printf "\n$(CYAN_TEXT)RUNNING...\n\n$(DEFAULT_TEXT)"
 	@$(addprefix $(BUILD_DIR), $(TARGET))
 
@@ -63,3 +65,4 @@ clean:
 	@printf "$(GREEN_TEXT)► $(CYAN_TEXT)build/ $(DEFAULT_BOLD_TEXT)and $(CYAN_TEXT)dumps/ $(DEFAULT_BOLD_TEXT)were removed!\n$(DEFAULT_TEXT)"
 	@rm -rf build
 	@rm -rf dumps
+	@rm -rf graphVizDumps/graphVizDump.html
