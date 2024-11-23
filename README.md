@@ -3,10 +3,6 @@
  <img src="https://i.imgur.com/FYE4WTz.png" alt="Project logo"></a>
 </p>
 
-<h1 align="center"></h1>
-
-<h2 align="center">🖇️ Complex "Doubly Linked List" Data Struct 🖇️</h2>
-
 ## 📝 Table of Contents
 
 - [About](#about)
@@ -79,7 +75,7 @@ The following functions are provided for working with a doubly linked list:
 
 - [customWarning](https://github.com/lvbealr/customWarning) - Warning Module
 
-## ⌛ GraphViz Dump <a name = "graphViz"></a>
+## ⌛ GraphViz Dump <a name = "graphviz"></a>
 
 To debug a doubly linked list, it is possible to create a graphic dump and save it in **.html** and **.svg** files
 
