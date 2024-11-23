@@ -28,10 +28,13 @@
   linkedListDump(listPtr);                                                 \
 }
 
+// TODO repair svg name (.dot.svg) huinya
+
 #define saveDumpImage(listPtr) { \
   char *buffer = (char *)calloc(MAX_CMD_BUFFER_SIZE, sizeof(char));               \
   customWarning(buffer != NULL, BAD_BUFFER_POINTER);                              \
                                                                                   \
+  printf("%s\n", (listPtr)->infoData->dumpFileName);                              \
   snprintf(buffer, MAX_CMD_BUFFER_SIZE, "dot -Tsvg %s -o %s.svg",                 \
            (listPtr)->infoData->dumpFileName, (listPtr)->infoData->dumpFileName); \
   system(buffer);                                                                 \

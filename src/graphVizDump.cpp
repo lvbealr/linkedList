@@ -140,5 +140,7 @@ linkedListError writeHtmlHeader(linkedList *list) {
 
   close(openFile);
 
+  FREE_(header);
+
   return NO_ERRORS;
 }
