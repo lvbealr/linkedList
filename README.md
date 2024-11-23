@@ -83,7 +83,7 @@ The following functions are provided for working with a doubly linked list:
 
 To debug a doubly linked list, it is possible to create a graphic dump and save it in **.html** and **.svg** files
 
-<img src="graphVizDumps/12.10.2024-03:39:42.dot.svg" alt="Project logo"></a>
+<img src="https://i.imgur.com/iS7AmcY.png" alt="Project logo"></a>
 
 ## ✍️ Authors <a name = "authors"></a>
 
