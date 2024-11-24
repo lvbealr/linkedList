@@ -1,6 +1,6 @@
 <p align="center">
   <a href="" rel="noopener">
- <img src="https://i.imgur.com/FYE4WTz.png" alt="Project logo"></a>
+ <img src="https://i.imgur.com/m6AdJaH.png" alt="Project logo"></a>
 </p>
 
 ## 📝 Table of Contents
